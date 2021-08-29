@@ -34,5 +34,6 @@ io.on('connection', function(socket){
 
 consumer.on('message', function(message) {
     console.log(message.key, message.value);
-    io.emit("message", message);
+    //io.emit("message", message);
+    io.emit("message", {'key': message.key, 'value': message.value});
 });

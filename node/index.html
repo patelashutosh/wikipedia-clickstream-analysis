@@ -1,8 +1,18 @@
-<div id='container' style="height:100%;width:100%;"></div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://code.highcharts.com/highcharts.js"></script>
-<script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
 <script src="/socket.io/socket.io.js"></script>
+
+<figure class="highcharts-figure">
+    <div id="container"></div>
+    <p class="highcharts-description">
+        Chart showing use of rotated axis labels and data labels.
+    </p>
+</figure>
+
 <script type="text/javascript">
     $(document).ready(function () {
 	    var socket = io();
@@ -16,79 +26,72 @@
             }
         });
 
-        chart = new Highcharts.Chart({
+        var options = {
             chart: {
-		        renderTo: 'container',
-                type: 'spline',
-                animation: Highcharts.svg, // don't animate in old IE
-                marginRight: 10,
-
+            renderTo: 'container',
+            type: 'column',
+            options3d: {
+                enabled: true,
+                alpha: 0,
+                beta: 0,
+                depth: 0,
+                viewDistance: 25
+            }
             },
             title: {
-                text: 'Wikipedia clickstream In One Minute Interval'
+                text: 'Most accessed pages on wikipedia'
+            },
+            subtitle: {
+                text: 'Source: <a href="http://en.wikipedia.org/wiki/List_of_cities_proper_by_population">Wikipedia</a>'
             },
             xAxis: {
-                // type: 'datetime',
-                tickPixelInterval: 150,
-                title: {
-                    text: 'Topic',
+                type: 'Page name',
+                labels: {
+                    rotation: -45,
                     style: {
-                        fontWeight: 'bold'
+                        fontSize: '13px',
+                        fontFamily: 'Verdana, sans-serif'
                     }
                 }
             },
             yAxis: {
+                min: 0,
                 title: {
-                    text: 'Total count',
-                    style: {
-                        fontWeight: 'bold'
-                    }
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
-            },
-            tooltip: {
-                formatter: function () {
-                    return '<b>' + this.series.name + '</b><br/>' +
-                    this.x + '<br/>' + Highcharts.numberFormat(this.y, 0);
+                    text: 'View count'
                 }
             },
             legend: {
-                enabled: true
+                enabled: false
             },
-            exporting: {
-                enabled: true
+            tooltip: {
+                pointFormat: 'View count <b>{point.y:.1f}</b>'
             },
             series: [{
-                name: 'Wikipedia clicks',
-                data: (function () {
-                    //generate an array of random data
-                    var data = [],
-                        topic = "dummy",
-                        i;
-
-                    for (i = -3; i <= 0; i += 1) {
-                        data.push({
-                            x: topic + i,
-                            y: 1000
-                        });
+                name: 'Articles',
+                data: [],
+                // data: [
+                //     ['placeholder1', 5000],
+                //     ['placeholder2', 4000]
+                // ],
+                dataLabels: {
+                    enabled: true,
+                    rotation: -90,
+                    color: '#FFFFFF',
+                    align: 'right',
+                    //format: '{point.y:.1f}', // one decimal
+                    y: 10, // 10 pixels down from the top
+                    style: {
+                        fontSize: '13px',
+                        fontFamily: 'Verdana, sans-serif'
                     }
-                    //var data = ["topic a", "topic b"]
-                    return data;
-                }())
+                }
             }]
-        });
-        socket.on('message', function(data){
-            //data = JSON.parse(data);
-            // if (data[0] === 'shipped') {
-            //     chart.series[0].addPoint([(new Date()).getTime(), data[1]], true, true);
-            //     chart.redraw();
-            // }
-            console.log(data.key, data.value);
-            chart.series[0].addPoint([data.key, data.value], true, true);
+        };
+        var chart = new Highcharts.Chart(options);
+        socket.on('message', function(msg){
+            //console.log("Message: *****: ", msg);
+            console.log(msg.key, msg.value);
+            chart.series[0].addPoint([msg.key, parseInt(msg.value)]);
             chart.redraw();
         });
     });
