@@ -1,0 +1,95 @@
+<div id='container' style="height:100%;width:100%;"></div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+	    var socket = io();
+	    var series;
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            },
+            lang: {
+                thousandsSep: ','
+            }
+        });
+
+        chart = new Highcharts.Chart({
+            chart: {
+		        renderTo: 'container',
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+
+            },
+            title: {
+                text: 'Wikipedia clickstream In One Minute Interval'
+            },
+            xAxis: {
+                // type: 'datetime',
+                tickPixelInterval: 150,
+                title: {
+                    text: 'Topic',
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Total count',
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                    this.x + '<br/>' + Highcharts.numberFormat(this.y, 0);
+                }
+            },
+            legend: {
+                enabled: true
+            },
+            exporting: {
+                enabled: true
+            },
+            series: [{
+                name: 'Wikipedia clicks',
+                data: (function () {
+                    //generate an array of random data
+                    var data = [],
+                        topic = "dummy",
+                        i;
+
+                    for (i = -3; i <= 0; i += 1) {
+                        data.push({
+                            x: topic + i,
+                            y: 1000
+                        });
+                    }
+                    //var data = ["topic a", "topic b"]
+                    return data;
+                }())
+            }]
+        });
+        socket.on('message', function(data){
+            //data = JSON.parse(data);
+            // if (data[0] === 'shipped') {
+            //     chart.series[0].addPoint([(new Date()).getTime(), data[1]], true, true);
+            //     chart.redraw();
+            // }
+            console.log(data.key, data.value);
+            chart.series[0].addPoint([data.key, data.value], true, true);
+            chart.redraw();
+        });
+    });
+</script>
