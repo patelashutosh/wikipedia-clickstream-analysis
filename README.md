@@ -17,6 +17,8 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
 ![architecture](docs/clickstream_processing_architecture.jpg)
 
 ## Software Setup:
+> Pre requisite: Java 8, node should be installed.
+
 1. Setup Kafka
    
    - Download Apache Kafka from https://kafka.apache.org/downloads .Latest version as of Sep 2021 is kafka_2.13-2.8.0.tgz. Direct wownload link :https://www.apache.org/dyn/closer.cgi?path=/kafka/2.8.0/kafka_2.13-2.8.0.tgz
