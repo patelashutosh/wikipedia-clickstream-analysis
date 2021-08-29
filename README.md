@@ -119,4 +119,22 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     tail -200 ../data/clickstream-enwiki-2021-05.tsv | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic wikistream --producer.config=config/producer.properties
     ```
 6. Notice the browser console for the messages from kafka wikistream topic. 
+   Sample output
+   ```
+    Sea_Around_Us_(organization) 228
+    AT&T_Pogo 376
+    San_Juan_de_Rioseco 204
+    Thamudic_B 408
+    Legazpi_(Madrid) 192
+    NoitulovE 504
+    Titiribí 212
+    New_Mexico_Bank_&_Trust_Building 248
+    Beryl_Smalley 212
+    Naiane_Rios 80
+    Judith_Ackland 168
+    Scharnegoutum 48
+    Mar_'Ukban_III_(exilarch) 88
+    Peter_Larisch 56
+
+   ```
 7. TODO: Display data in charts.
