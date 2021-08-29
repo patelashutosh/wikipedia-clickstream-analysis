@@ -2,17 +2,18 @@
 
 The Wikipedia Clickstream dataset contains counts of (referrer, resource) pairs extracted from the request logs of Wikipedia. 
 
-Download appropriate dataset from:
- https://dumps.wikimedia.org/other/clickstream/
- For e.g. https://dumps.wikimedia.org/other/clickstream/2021-05/clickstream-enwiki-2021-05.tsv.gz 
+Download appropriate dataset from: https://dumps.wikimedia.org/other/clickstream/
+
+For e.g. https://dumps.wikimedia.org/other/clickstream/2021-05/clickstream-enwiki-2021-05.tsv.gz 
 
 ### Sample data:
-other-search	Scharnegoutum	external	12
+|prev|curr|link|n|
+|----|----|----|----|
+other-search |	Scharnegoutum	| external	| 12
+Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
 
-Drew_Dober	UFC_Fight_Night:_Muñoz_vs._Mousasi	link	26
 
-
-## Setup:
+## Software Setup:
 1. Setup Kafka
    
    - Download Apache Kafka from https://kafka.apache.org/downloads .Latest version as of Sep 2021 is kafka_2.13-2.8.0.tgz. Direct wownload link :https://www.apache.org/dyn/closer.cgi?path=/kafka/2.8.0/kafka_2.13-2.8.0.tgz
@@ -52,15 +53,17 @@ Drew_Dober	UFC_Fight_Night:_Muñoz_vs._Mousasi	link	26
     # Install dependencies as specified in package.json
     npm install
     ```
-5. Start expressjs server 
+    
+## Start the services:
+1. Start expressjs server 
    ```bash
    node index
    ```
-6. Start spark shell in a seperate terminal
+2. Start spark shell in a seperate terminal
    ```
    bin/spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2
    ```
-7. Paste following code in the spark shell to perform strreaming with kafka
+3. Paste following code in the spark shell to perform strreaming with kafka
    > Note: can use :paste on shell to enter paste mode
    ```scala
     import scala.util.Try
@@ -103,12 +106,12 @@ Drew_Dober	UFC_Fight_Night:_Muñoz_vs._Mousasi	link	26
         .start()
    ```
 
-8.  Open browser http://localhost:3000/
-9.  Start streaming wiki clickstream data in `wikistream` topic
+4.  Open browser http://localhost:3000/
+5.  Start streaming wiki clickstream data in `wikistream` topic
     ```bash
     cd kafka_2.13-2.8.0
     #just reading last 200 lines from wiki clickstream file
     tail -200 ../data/clickstream-enwiki-2021-05.tsv | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic wikistream --producer.config=config/producer.properties
     ```
-11. Notice the browser console for the messages from kafka wikistream topic. 
-12. TODO: Display data in charts.
+6. Notice the browser console for the messages from kafka wikistream topic. 
+7. TODO: Display data in charts.
