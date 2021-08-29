@@ -12,6 +12,9 @@ For e.g. https://dumps.wikimedia.org/other/clickstream/2021-05/clickstream-enwik
 other-search |	Scharnegoutum	| external	| 12
 Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
 
+## Architecture
+
+![architecture](docs/clickstream_processing_architecture.jpg)
 
 ## Software Setup:
 1. Setup Kafka
