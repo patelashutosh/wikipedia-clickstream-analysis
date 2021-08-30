@@ -51,8 +51,10 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
         cd spark-3.1.2-bin-hadoop3.2
         ```
 4. Setup Node.js
+   
+   Checkout this git repo.
     ```bash
-    # Open a new terminal and go to node directory 
+    # Open a new terminal and go to node directory of this git repo
     cd node
 
     # Install dependencies as specified in package.json
@@ -64,8 +66,9 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
    ```bash
    node index
    ```
-2. Start spark shell in a seperate terminal
+2. Start spark shell in a seperate terminal.  
    ```
+   cd spark-3.1.2-bin-hadoop3.2
    bin/spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2
    ```
 3. Paste following code in the spark shell to perform strreaming with kafka
@@ -138,4 +141,4 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     Peter_Larisch 56
 
    ```
-7. TODO: Display data in charts.
+7. TODO: Limit to top 10 in the charts. Currently it is showing all records.
