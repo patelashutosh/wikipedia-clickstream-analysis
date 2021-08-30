@@ -7,6 +7,7 @@ var kafka = require('kafka-node');
 const express = require('express');
 const port = 3000;
 const app = express();
+var data = [];
 
 const Consumer = kafka.Consumer,
  client = new kafka.KafkaClient('localhost:9092'),
@@ -27,6 +28,8 @@ const io = require('socket.io')(server, {
 
 io.on('connection', function(socket){
     console.log('user connected');
+    data = data.slice(0,50)
+    io.emit("message", data.slice(0,20))
     socket.on('disconnect', function(){
         console.log('user disconnected');
     });
@@ -34,6 +37,7 @@ io.on('connection', function(socket){
 
 consumer.on('message', function(message) {
     console.log(message.key, message.value);
+    data.push({'key': message.key, 'value': message.value})
     //io.emit("message", message);
-    io.emit("message", {'key': message.key, 'value': message.value});
+    io.emit("message", [{'key': message.key, 'value': message.value}]);
 });

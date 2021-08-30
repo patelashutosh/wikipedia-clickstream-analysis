@@ -6,6 +6,7 @@
 
 <script src="/socket.io/socket.io.js"></script>
 
+
 <figure class="highcharts-figure">
     <div id="container"></div>
     <p class="highcharts-description">
@@ -14,9 +15,32 @@
 </figure>
 
 <script type="text/javascript">
+
     $(document).ready(function () {
 	    var socket = io();
 	    var series;
+        var chartData = new Map();
+
+        function processMap(mapData) {
+            var map = new Map([...mapData.entries()].sort((a, b) => b[1] - a[1]));
+            return map;
+        }
+
+        function convertToArray(mapData, n) {
+            var arrs = new Array();
+            var i = 0;
+            for (let [key, value] of mapData.entries()) {
+                    //console.log("value", value)
+                    value = parseInt(value);
+                    var arr = [key, value];
+                    arrs.push(arr);
+                    if (i++ == n) {
+                        break;
+                }
+            }
+            return arrs;
+        }
+
         Highcharts.setOptions({
             global: {
                 useUTC: false
@@ -30,13 +54,13 @@
             chart: {
             renderTo: 'container',
             type: 'column',
-            options3d: {
-                enabled: true,
-                alpha: 0,
-                beta: 0,
-                depth: 0,
-                viewDistance: 25
-            }
+            // options3d: {
+            //     enabled: true,
+            //     alpha: 0,
+            //     beta: 0,
+            //     depth: 0,
+            //     viewDistance: 25
+            // }
             },
             title: {
                 text: 'Most accessed pages on wikipedia'
@@ -45,14 +69,17 @@
                 text: 'Source: <a href="http://en.wikipedia.org/wiki/List_of_cities_proper_by_population">Wikipedia</a>'
             },
             xAxis: {
-                type: 'Page name',
-                labels: {
-                    rotation: -45,
-                    style: {
-                        fontSize: '13px',
-                        fontFamily: 'Verdana, sans-serif'
-                    }
-                }
+                type: 'category',
+                //type: 'Page name',
+                //categories: ['Apples', 'Oranges', 'Bananas'],
+                // labels: {
+                //     rotation: -45,
+                //     style: {
+                //         fontSize: '13px',
+                //         fontFamily: 'Verdana, sans-serif'
+                //     }
+                // }
+                crosshair: true
             },
             yAxis: {
                 min: 0,
@@ -64,15 +91,17 @@
                 enabled: false
             },
             tooltip: {
-                pointFormat: 'View count <b>{point.y:.1f}</b>'
+                pointFormat: 'View count <b>{point.y}</b>'
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
             },
             series: [{
                 name: 'Articles',
                 data: [],
-                // data: [
-                //     ['placeholder1', 5000],
-                //     ['placeholder2', 4000]
-                // ],
                 dataLabels: {
                     enabled: true,
                     rotation: -90,
@@ -88,10 +117,14 @@
             }]
         };
         var chart = new Highcharts.Chart(options);
-        socket.on('message', function(msg){
-            //console.log("Message: *****: ", msg);
-            console.log(msg.key, msg.value);
-            chart.series[0].addPoint([msg.key, parseInt(msg.value)]);
+        socket.on('message', function(msgs){
+            for(let msg of msgs) {
+                console.log(msg.key, msg.value);
+                chartData.set(msg.key, msg.value);
+                chartData = processMap(chartData);
+                var data = convertToArray(chartData, 10); //take top 10
+                chart.series[0].setData(data);
+            }
             chart.redraw();
         });
     });
