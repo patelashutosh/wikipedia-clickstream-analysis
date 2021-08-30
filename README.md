@@ -95,24 +95,26 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     Do some aggregation on streaming dataframe 
     ```scala
     val messages = records.select("value").as[Array[Byte]]
-                        .flatMap(x => parseVal(x))
-                        .groupBy("curr")
-                        .agg(Map("n" -> "sum"))
-                        .sort($"sum(n)".desc)
+                    .flatMap(x => parseVal(x))
+                    .groupBy("curr")
+                    .agg(Map("n" -> "sum"))
+                    .sort($"sum(n)".desc)
+                    .withColumnRenamed("curr","key")
+                    .withColumnRenamed("sum(n)","value")
+                    .withColumn("value",col("value").cast("string"))
+                    .limit(10)
     ```
     Send the processed data to Kafka sink. topic name `top_resource`
     Create a folder for checkpoint somewhere. For e.g /tmp/spark_checkpoint and set for checkpointDir below
     ```scala
-    val messages2 = messages.withColumn("curr",messages("curr").cast("string")).withColumn("sum(n)",messages("sum(n)").cast("string")).withColumnRenamed("curr","key").withColumnRenamed("sum(n)","value")
-
     val checkpointDir = "/tmp/spark_checkpoint"
-    val kafkaSink = messages2.writeStream
-        .format("kafka")
-        .option("kafka.bootstrap.servers", "localhost:9092")
-        .option("topic", "top_resource")
-        .option("checkpointLocation", checkpointDir)
-        .outputMode("complete")
-        .start()
+    val kafkaSink = messages.writeStream
+       .format("kafka")
+       .option("kafka.bootstrap.servers", "localhost:9092")
+       .option("topic", "top_resource")
+       .option("checkpointLocation", checkpointDir)
+       .outputMode("complete")
+       .start()
    ```
    Keep the terminal running
 
