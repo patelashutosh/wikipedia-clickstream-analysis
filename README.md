@@ -74,10 +74,10 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     import scala.util.Try
     case class WikiClickstream(prev: String, curr: String, link: String, n: Long)
 
-    def parseVal(x: Array[Byte]): Option[Click] = {
+    def parseVal(x: Array[Byte]): Option[WikiClickstream] = {
         val split: Array[String] = new Predef.String(x).split("\\t")
         if (split.length == 4) {
-        Try(Click(split(0), split(1), split(2), split(3).toLong)).toOption
+        Try(WikiClickstream(split(0), split(1), split(2), split(3).toLong)).toOption
         } else
         None
         }
