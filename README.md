@@ -29,18 +29,18 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
         $ tar -xzf kafka_2.13-2.8.0.tgz
         $ cd kafka_2.13-2.8.0
 
-        # Start the ZooKeeper service in a terminal
+        # Start the ZooKeeper service in a terminal. Keep the terminal running
         $ bin/zookeeper-server-start.sh config/zookeeper.properties
 
-        # Start the Kafka broker service in another ternimal
+        # Start the Kafka broker service in another ternimal. Keep the terminal running
         $ bin/kafka-server-start.sh config/server.properties
         ```
 2. Create topics in kafka
 ```
-   #Open a new terminal and create a topic named wikistream to hold the clickstream data
+   #Open a new terminal and create a topic named wikistream to hold the clickstream data.
    bin/kafka-topics.sh --create --topic wikistream --bootstrap-server localhost:9092
 
-   #create another topic named top_resource to store processed data for top accessed pages
+   #create another topic named top_resource to store processed data for top accessed pages.
    bin/kafka-topics.sh --create --topic top_resource --bootstrap-server localhost:9092
 ```
 3. Setup Spark
@@ -51,8 +51,10 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
         cd spark-3.1.2-bin-hadoop3.2
         ```
 4. Setup Node.js
+   
+   Checkout this git repo.
     ```bash
-    # Open a new terminal and go to node directory 
+    # Open a new terminal and go to node directory of this git repo
     cd node
 
     # Install dependencies as specified in package.json
@@ -64,8 +66,9 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
    ```bash
    node index
    ```
-2. Start spark shell in a seperate terminal
+2. Start spark shell in a seperate terminal.  
    ```
+   cd spark-3.1.2-bin-hadoop3.2
    bin/spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2
    ```
 3. Paste following code in the spark shell to perform strreaming with kafka
@@ -74,10 +77,10 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     import scala.util.Try
     case class WikiClickstream(prev: String, curr: String, link: String, n: Long)
 
-    def parseVal(x: Array[Byte]): Option[Click] = {
+    def parseVal(x: Array[Byte]): Option[WikiClickstream] = {
         val split: Array[String] = new Predef.String(x).split("\\t")
         if (split.length == 4) {
-        Try(Click(split(0), split(1), split(2), split(3).toLong)).toOption
+        Try(WikiClickstream(split(0), split(1), split(2), split(3).toLong)).toOption
         } else
         None
         }
@@ -98,10 +101,11 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
                         .sort($"sum(n)".desc)
     ```
     Send the processed data to Kafka sink. topic name `top_resource`
+    Create a folder for checkpoint somewhere. For e.g /tmp/spark_checkpoint and set for checkpointDir below
     ```scala
     val messages2 = messages.withColumn("curr",messages("curr").cast("string")).withColumn("sum(n)",messages("sum(n)").cast("string")).withColumnRenamed("curr","key").withColumnRenamed("sum(n)","value")
 
-
+    val checkpointDir = "/tmp/spark_checkpoint"
     val kafkaSink = messages2.writeStream
         .format("kafka")
         .option("kafka.bootstrap.servers", "localhost:9092")
@@ -110,6 +114,7 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
         .outputMode("complete")
         .start()
    ```
+   Keep the terminal running
 
 4.  Open browser http://localhost:3000/
 5.  Start streaming wiki clickstream data in `wikistream` topic
@@ -137,4 +142,4 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     Peter_Larisch 56
 
    ```
-7. TODO: Display data in charts.
+7. TODO: Limit to top 10 in the charts. Currently it is showing all records.
