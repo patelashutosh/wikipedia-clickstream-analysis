@@ -29,18 +29,18 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
         $ tar -xzf kafka_2.13-2.8.0.tgz
         $ cd kafka_2.13-2.8.0
 
-        # Start the ZooKeeper service in a terminal
+        # Start the ZooKeeper service in a terminal. Keep the terminal running
         $ bin/zookeeper-server-start.sh config/zookeeper.properties
 
-        # Start the Kafka broker service in another ternimal
+        # Start the Kafka broker service in another ternimal. Keep the terminal running
         $ bin/kafka-server-start.sh config/server.properties
         ```
 2. Create topics in kafka
 ```
-   #Open a new terminal and create a topic named wikistream to hold the clickstream data
+   #Open a new terminal and create a topic named wikistream to hold the clickstream data.
    bin/kafka-topics.sh --create --topic wikistream --bootstrap-server localhost:9092
 
-   #create another topic named top_resource to store processed data for top accessed pages
+   #create another topic named top_resource to store processed data for top accessed pages.
    bin/kafka-topics.sh --create --topic top_resource --bootstrap-server localhost:9092
 ```
 3. Setup Spark
@@ -105,7 +105,7 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     ```scala
     val messages2 = messages.withColumn("curr",messages("curr").cast("string")).withColumn("sum(n)",messages("sum(n)").cast("string")).withColumnRenamed("curr","key").withColumnRenamed("sum(n)","value")
 
-    val checkpointDir = “/tmp/spark_checkpoint”
+    val checkpointDir = "/tmp/spark_checkpoint"
     val kafkaSink = messages2.writeStream
         .format("kafka")
         .option("kafka.bootstrap.servers", "localhost:9092")
@@ -114,6 +114,7 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
         .outputMode("complete")
         .start()
    ```
+   Keep the terminal running
 
 4.  Open browser http://localhost:3000/
 5.  Start streaming wiki clickstream data in `wikistream` topic
