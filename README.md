@@ -71,6 +71,10 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
    cd spark-3.1.2-bin-hadoop3.2
    bin/spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2
    ```
+   > If spark process gets killed due to Out of Memory error, increase memory and run spark shell as follows:
+   ```
+   bin/spark-shell  --driver-memory 5g --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2
+   ```
 3. Paste following code in the spark shell to perform strreaming with kafka
    > Note: can use :paste on shell to enter paste mode
    ```scala
@@ -119,12 +123,24 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
    Keep the terminal running
 
 4.  Open browser http://localhost:3000/
-5.  Start streaming wiki clickstream data in `wikistream` topic
+5.  Start streaming wiki clickstream data in `wikistream` topic. Below steps will stream 200 records in the system.
     ```bash
     cd kafka_2.13-2.8.0
     #just reading last 200 lines from wiki clickstream file
     tail -200 ../data/clickstream-enwiki-2021-05.tsv | bin/kafka-console-producer.sh --broker-list localhost:9092 --topic wikistream --producer.config=config/producer.properties
     ```
+    > To stream *all* records , use following steps: The script streams a 50K records file every 30 seconds into the system
+   ```bash
+      # update the export path appropriately to directory where kakfa was installed. Note this directory will have the bin folder.
+      export KAFKA_HOME=/Users/ashutosh/MPDS_Project/Wikipedia/kafka_2.13-2.8.0
+      cd data
+      # assuming wiki file is extracted here as clickstream-enwiki-2021-05.tsv. (Check and update the extracted file name below).
+      mkdir split
+      split -l 50000 -d data/clickstream-enwiki-2021-05.tsv data/split/clickstream-enwiki-2021-05
+      bash push_files_into_topic.sh split localhost:9092 wikistream
+
+   ```
+
 6. Notice the browser console for the messages from kafka wikistream topic. 
    Sample output
    ```
@@ -144,4 +160,20 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     Peter_Larisch 56
 
    ```
-7. TODO: Limit to top 10 in the charts. Currently it is showing all records.
+7. Monitor the charts. It will update every few seconds as new records arrive.
+8. Maintenance: To start fresh, clear the topics as follows
+   ```bash
+   #1. Kill the kafka server. Start again with this additional parameter of delete.topic.enable
+      bin/kafka-server-start.sh config/server.properties \
+      --override delete.topic.enable=true
+
+   #2. Delete all the topics.
+      bin/kafka-topics.sh \
+      --delete --topic top_resource \
+      --zookeeper localhost:2181
+
+      bin/kafka-topics.sh \
+      --delete --topic wikistream \
+      --zookeeper localhost:2181
+   #3 Restart spark and node.js apps
+   ```

@@ -28,8 +28,8 @@ const io = require('socket.io')(server, {
 
 io.on('connection', function(socket){
     console.log('user connected');
-    data = data.slice(0,50)
-    io.emit("message", data.slice(0,20))
+    data = data.slice(1).slice(-50)
+    io.emit("message", data.slice(1).slice(-20))
     socket.on('disconnect', function(){
         console.log('user disconnected');
     });
