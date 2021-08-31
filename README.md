@@ -40,8 +40,11 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
    #Open a new terminal and create a topic named wikistream to hold the clickstream data.
    bin/kafka-topics.sh --create --topic wikistream --bootstrap-server localhost:9092
 
-   #create another topic named top_resource to store processed data for top accessed pages.
+   #create another topic named top_resource to store processed data for cumulative count of top accessed pages.
    bin/kafka-topics.sh --create --topic top_resource --bootstrap-server localhost:9092
+
+   #create another topic named top_resource_sliding to store processed data for sliding window of top accessed pages.
+   bin/kafka-topics.sh --create --topic top_resource_sliding --bootstrap-server localhost:9092 
 ```
 3. Setup Spark
    - Download spark from https://spark.apache.org/downloads.html Direct link: https://www.apache.org/dyn/closer.lua/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz
@@ -79,6 +82,7 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
    > Note: can use :paste on shell to enter paste mode
    ```scala
     import scala.util.Try
+    import org.apache.spark.sql.streaming.Trigger
     case class WikiClickstream(prev: String, curr: String, link: String, n: Long)
 
     def parseVal(x: Array[Byte]): Option[WikiClickstream] = {
@@ -96,10 +100,14 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
                         .option("failOnDataLoss", "false")
                         .option("kafka.bootstrap.servers", "localhost:9092").load()
     ```
+   Preprocess
+    ```
+   val records_preprocessed = records.select("value").as[Array[Byte]]
+                     .flatMap(x => parseVal(x))
+    ```
     Do some aggregation on streaming dataframe 
     ```scala
-    val messages = records.select("value").as[Array[Byte]]
-                    .flatMap(x => parseVal(x))
+    val messages = records_preprocessed
                     .groupBy("curr")
                     .agg(Map("n" -> "sum"))
                     .sort($"sum(n)".desc)
@@ -119,6 +127,32 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
        .option("checkpointLocation", checkpointDir)
        .outputMode("complete")
        .start()
+   ```
+       Do some aggregation with event time window
+    ```scala
+      val slidingMessages = records_preprocessed
+                        .withColumn("current_timestamp", current_timestamp())
+                        .withWatermark("current_timestamp", "10 minutes")
+                        .groupBy(window($"current_timestamp", "10 minutes", "5 minutes"), $"curr")
+                        .agg(sum($"n"))
+                        .sort($"sum(n)".desc)
+                        .withColumnRenamed("curr","key")
+                        .withColumnRenamed("sum(n)","value")
+                        .withColumn("value",col("value").cast("string"))
+                        .limit(20)   
+    ```
+    Send the processed data to Kafka sink. topic name `top_resource_sliding`
+    Create a folder for checkpoint somewhere. For e.g /tmp/spark_checkpoint_window and set for checkpointDir below
+    ```scala
+      val checkpointDir = "/tmp/spark_checkpoint_window"
+      val kafkaSinkWindow = slidingMessages.writeStream
+         .format("kafka")
+         .trigger(Trigger.ProcessingTime("30 second"))
+         .option("kafka.bootstrap.servers", "localhost:9092")
+         .option("topic", "top_resource_sliding")
+         .option("checkpointLocation", checkpointDir)
+         .outputMode("complete")
+         .start()
    ```
    Keep the terminal running
 
@@ -175,5 +209,8 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
       bin/kafka-topics.sh \
       --delete --topic wikistream \
       --zookeeper localhost:2181
-   #3 Restart spark and node.js apps
+   #3 Delete spark checkpoints
+      rm -rf /tmp/spark_checkpoint
+      rm -rf /tmp/spark_checkpoint_window
+   #4 Restart spark and node.js apps
    ```

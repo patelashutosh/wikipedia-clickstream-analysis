@@ -3,23 +3,35 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<!--<script src="https://code.highcharts.com/themes/dark-unica.js"></script>
+<script src="https://code.highcharts.com/themes/high-contrast-light.js"></script> 
+
+<script src="https://code.highcharts.com/themes/dark-blue.js"></script>-->
+<script src="https://code.highcharts.com/themes/high-contrast-dark.js"></script>
 
 <script src="/socket.io/socket.io.js"></script>
+<link type="text/css" href="style.css">
 
 
-<figure class="highcharts-figure">
-    <div id="container"></div>
-    <p class="highcharts-description">
-        Chart showing use of rotated axis labels and data labels.
-    </p>
-</figure>
+
+<table >
+    <th>
+        <td colspan="3"> <h2>Wikipedia Clickstream analysis</h2></td>
+    </th>
+    <tr>
+        <td><div id="container1" style="width: 750px; height: 500px;"></div></td>
+        <td><div style="width: 100px; height: 500px;"></div></td>
+        <td><div id="container2" style="width: 750px; height: 500px;"></div></td>
+    </tr>
+ <table>
 
 <script type="text/javascript">
 
     $(document).ready(function () {
 	    var socket = io();
 	    var series;
-        var chartData = new Map();
+        var chartDataFull = new Map();
+        var chartDataSliding = new Map();
 
         function processMap(mapData) {
             var map = new Map([...mapData.entries()].sort((a, b) => b[1] - a[1]));
@@ -52,15 +64,8 @@
 
         var options = {
             chart: {
-            renderTo: 'container',
-            type: 'column',
-            // options3d: {
-            //     enabled: true,
-            //     alpha: 0,
-            //     beta: 0,
-            //     depth: 0,
-            //     viewDistance: 25
-            // }
+            //renderTo: 'container1',
+            type: 'column'
             },
             title: {
                 text: 'Most accessed pages on wikipedia'
@@ -70,15 +75,6 @@
             },
             xAxis: {
                 type: 'category',
-                //type: 'Page name',
-                //categories: ['Apples', 'Oranges', 'Bananas'],
-                // labels: {
-                //     rotation: -45,
-                //     style: {
-                //         fontSize: '13px',
-                //         fontFamily: 'Verdana, sans-serif'
-                //     }
-                // }
                 crosshair: true
             },
             yAxis: {
@@ -87,39 +83,56 @@
                     text: 'View count'
                 }
             },
-            legend: {
-                enabled: false
-            },
-            tooltip: {
-                pointFormat: 'View count <b>{point.y}</b>'
-            },
-            plotOptions: {
-                column: {
-                    pointPadding: 0.2,
-                    borderWidth: 0
-                }
-            },
+            // legend: {
+            //     enabled: false
+            // },
+            // tooltip: {
+            //     pointFormat: 'View count <b>{point.y}</b>'
+            // },
+            // plotOptions: {
+            //     column: {
+            //         pointPadding: 0.2,
+            //         borderWidth: 0
+            //     }
+            // },
             series: [{
                 name: 'Articles',
                 data: [],
-                dataLabels: {
-                    enabled: true,
-                    rotation: -90,
-                    color: '#FFFFFF',
-                    align: 'right',
-                    //format: '{point.y:.1f}', // one decimal
-                    y: 10, // 10 pixels down from the top
-                    style: {
-                        fontSize: '13px',
-                        fontFamily: 'Verdana, sans-serif'
-                    }
-                }
+                // dataLabels: {
+                //     enabled: true,
+                //     rotation: -90,
+                //     color: '#FFFFFF',
+                //     align: 'right',
+                //     //format: '{point.y:.1f}', // one decimal
+                //     y: 10, // 10 pixels down from the top
+                //     style: {
+                //         fontSize: '13px',
+                //         fontFamily: 'Verdana, sans-serif'
+                //     }
+                // }
             }]
         };
-        var chart = new Highcharts.Chart(options);
+        //1st chart
+        var chartFull = new Highcharts.Chart('container1', options);
+        chartFull.setTitle({text: "Most accessed pages on wikipedia - cumulative"});
+
+        //2nd chart
+        var chartSliding = new Highcharts.Chart('container2', options);
+        chartSliding.setTitle({text: "Most accessed pages on wikipedia - sliding window"});
+
         socket.on('message', function(msgs){
             for(let msg of msgs) {
-                console.log(msg.key, msg.value);
+                console.log(msg.topic, msg.key, msg.value)
+                var chart;
+                var chartData;
+                if (msg.topic == 'top_resource') {
+                    chart = chartFull;
+                    chartData = chartDataFull;
+                } else if (msg.topic == 'top_resource_sliding') {
+                    chart = chartSliding;
+                    chartData = chartDataSliding
+                }
+
                 chartData.set(msg.key, msg.value);
                 chartData = processMap(chartData);
                 var data = convertToArray(chartData, 10); //take top 10
@@ -127,5 +140,6 @@
             }
             chart.redraw();
         });
+
     });
 </script>

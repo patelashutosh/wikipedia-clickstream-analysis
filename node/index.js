@@ -7,37 +7,49 @@ var kafka = require('kafka-node');
 const express = require('express');
 const port = 3000;
 const app = express();
-var data = [];
+var data_full = [];
+var data_sliding = [];
 
-const Consumer = kafka.Consumer,
- client = new kafka.KafkaClient('localhost:9092'),
- consumer = new Consumer(
- client, [ { topic: 'top_resource', partition: 0 } ], { autoCommit: false });
+const client = new kafka.KafkaClient('localhost:9092');
+
+let consumer = new kafka.Consumer(
+  client, [{ topic: 'top_resource', partition: 0 }, { topic: 'top_resource_sliding', partition: 0 }], { autoCommit: false });
 
 const server = app.listen(port, () => {
-    console.log(`Listening on port ${server.address().port}`);
-  });
-app.get('/', function(req, res){
-    res.sendFile('index.html', { root: __dirname });
+  console.log(`Listening on port ${server.address().port}`);
+});
+app.get('/', function (req, res) {
+  res.sendFile('index.html', { root: __dirname });
 });
 const io = require('socket.io')(server, {
-    cors: {
-      origin: '*',
-    }
-  });
-
-io.on('connection', function(socket){
-    console.log('user connected');
-    data = data.slice(1).slice(-50)
-    io.emit("message", data.slice(1).slice(-20))
-    socket.on('disconnect', function(){
-        console.log('user disconnected');
-    });
+  cors: {
+    origin: '*',
+  }
 });
 
-consumer.on('message', function(message) {
-    console.log(message.key, message.value);
-    data.push({'key': message.key, 'value': message.value})
-    //io.emit("message", message);
-    io.emit("message", [{'key': message.key, 'value': message.value}]);
+io.on('connection', function (socket) {
+  console.log('user connected');
+  //emit initial messages for both charts
+  io.emit("message", data_full.slice(1).slice(-50))
+  io.emit("message", data_sliding.slice(1).slice(-50))
+  socket.on('disconnect', function () {
+    console.log('user disconnected');
+  });
+});
+
+consumer.on('message', function (message) {
+  console.log(message.topic, message.key, message.value);
+  let dataArr = [];
+  if (message.topic == 'top_resource') {
+    dataArr = data_full;
+  } else if (message.topic == 'top_resource_sliding') {
+    dataArr = data_sliding;
+  }
+  dataArr.push(message)
+  dataArr = dataArr.slice(1).slice(-100)
+  io.emit("message", [message]);
+});
+
+consumer.on('error', function (err) {
+  console.log('error', err);
 });
