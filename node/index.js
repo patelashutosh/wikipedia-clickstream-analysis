@@ -5,6 +5,7 @@ socket.io for live connection with browser
 */
 var kafka = require('kafka-node');
 const express = require('express');
+const path = require('path'); 
 const port = 3000;
 const app = express();
 var data_full = [];
@@ -21,6 +22,9 @@ const server = app.listen(port, () => {
 app.get('/', function (req, res) {
   res.sendFile('index.html', { root: __dirname });
 });
+//app.use('/public', express.static(path.join(__dirname, "public")));
+app.use(express.static('public'))
+
 const io = require('socket.io')(server, {
   cors: {
     origin: '*',
