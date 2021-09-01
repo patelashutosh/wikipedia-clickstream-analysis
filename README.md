@@ -132,8 +132,8 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
     ```scala
       val slidingMessages = records_preprocessed
                         .withColumn("current_timestamp", current_timestamp())
-                        .withWatermark("current_timestamp", "10 minutes")
-                        .groupBy(window($"current_timestamp", "10 minutes", "5 minutes"), $"curr")
+                        .withWatermark("current_timestamp", "4 minutes")
+                        .groupBy(window($"current_timestamp", "4 minutes", "2 minutes"), $"curr")
                         .agg(sum($"n"))
                         .sort($"sum(n)".desc)
                         .withColumnRenamed("curr","key")
