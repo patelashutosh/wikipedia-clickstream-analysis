@@ -156,7 +156,7 @@ Drew_Dober	| UFC_Fight_Night:_Muñoz_vs._Mousasi |	link |	26
    ```
    Keep the terminal running
 
-4.  Open browser http://localhost:3000/
+4.  Open browser http://localhost:3000/  (new dashboard at http://localhost:3000/chart.html )
 5.  Start streaming wiki clickstream data in `wikistream` topic. Below steps will stream 200 records in the system.
     ```bash
     cd kafka_2.13-2.8.0
