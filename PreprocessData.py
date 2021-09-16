@@ -3,7 +3,6 @@
 #pip install en_core_web_sm
 #python -m spacy download en_core_web_sm
 
-
 import wikipediaapi
 import spacy
 from spacy import displacy
@@ -19,16 +18,19 @@ from json import dumps
 from kafka import KafkaProducer
 from collections import defaultdict
 import os
+import pandas as pd
 
-producer = KafkaProducer(
-    bootstrap_servers=['localhost:9092'],
-    value_serializer=lambda x: dumps(x).encode('utf-8')
-)
+df = pd.DataFrame(columns = ['prev','curr','link','date','category'])
+
+#producer = KafkaProducer(
+ #   bootstrap_servers=['localhost:9092'],
+  #  value_serializer=lambda x: dumps(x).encode('utf-8')
+#)
 
 #Need to update date for different month / year
 
-start_date = datetime.strptime("1/1/2018 1:30 PM", "%m/%d/%Y %I:%M %p")
-end_date = datetime.strptime("1/1/2019 4:50 AM", "%m/%d/%Y %I:%M %p")
+start_date = datetime.strptime("5/1/2021 12:00 AM", "%m/%d/%Y %I:%M %p")
+end_date = datetime.strptime("5/31/2021 12:00 PM", "%m/%d/%Y %I:%M %p")
 delta = end_date - start_date
 int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
 
@@ -43,11 +45,9 @@ def getPageCategory(pageName):
             temp[i] += 1
     res = max(temp, key=temp.get)
     return str(res)
-#print("Word with maximum frequency : " + str(res))
-    
-#print(doc.ents)
-#sorted(page_py.categories)
-#cat1
+
+def writeDF(data):
+    df.append(data)
 
 #with open("data2.tsv") as file:
 def processFile(file):
@@ -58,19 +58,22 @@ def processFile(file):
             random_second = randrange(int_delta)
             set_date = start_date + timedelta(seconds=random_second)
             #print(line[0]+" "+line[1]+" "+line[2] + " " + str(set_date) +" "+ str(set_category))
-            data = line[0]+" "+line[1]+" "+line[2] + " " + str(set_date)+" "+str(set_category)
+            data = [ line[0], line[1] , line[2] , str(set_date) , str(set_category)]
+            writeDF(data)
             #producer.send('topic_1', value=data)
-            producer.send('wikistream', value=data)
+           # producer.send('wikistream', value=data)
         #sleep(0.5)
-        print(line[0]+" "+line[1]+" "+line[2] +" "+ str(set_category))
+        #print(line[0]+" "+line[1]+" "+line[2] +" "+ str(set_category))
 
-folderpath = r"./split/" # make sure to put the 'r' in front
+folderpath = r"./data/" 
 filepaths  = [os.path.join(folderpath, name) for name in os.listdir(folderpath)]
 
 for path in filepaths:
-    #os.path.basename(filepath)
     with open(path, 'r') as f:
         processFile(f)
+        
+df.sort_values("date", axis = 0, ascending=True, inplace=True)
+df.to_csv('newdata.csv')
         
         
 
