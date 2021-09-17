@@ -150,7 +150,7 @@ chmod 755 ./kafka/init_kafka.sh
    event_top_categories Wikipedia Teahouse 5
    event_top_categories Wikipedia help forums 13
    event_top_categories Templates using TemplateStyles 23
-```
+   ```
 7. Monitor the charts. It will update every few seconds as new records arrive.
 
 ![eventstream](docs/wiki_event_stream_charts.jpg)
