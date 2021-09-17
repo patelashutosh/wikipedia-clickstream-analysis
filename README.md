@@ -1,5 +1,7 @@
 # Wikipedia Clickstream Analysis using Apache Kafka, Spark streaming and Node.Js
 
+Project site: https://sites.google.com/view/mpds-final-project-group-4/home
+
 The Wikipedia Clickstream dataset contains counts of (referrer, resource) pairs extracted from the request logs of Wikipedia. 
 
 Download appropriate dataset from: https://dumps.wikimedia.org/other/clickstream/
