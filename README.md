@@ -194,3 +194,13 @@ chmod 755 ./kafka/init_kafka.sh
 
    #4 Restart spark and node.js apps
    ```
+9. References
+    > https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
+    > https://kafka.apache.org/quickstart
+    > https://meta.wikimedia.org/wiki/Research:Wikipedia_clickstream
+    > https://wikitech.wikimedia.org/wiki/Event_Platform/EventStreams
+    > https://codepen.io/ottomata/pen/LYpPpxj?editors=1010
+    > http://www.lib4dev.in/info/IBM/kafka-streaming-click-analysis/105885530
+    > https://github.com/singhabhinav/cloudxlab/tree/master/spark/projects/real-time-analytics-dashboard/node
+    > https://www.highcharts.com/demo/column-basic
+    > https://github.com/SOHU-Co/kafka-node#offset
