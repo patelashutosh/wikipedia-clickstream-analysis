@@ -64,7 +64,9 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 	<script src="https://code.highcharts.com/modules/series-label.js"></script>
 	<script src="https://code.highcharts.com/modules/exporting.js"></script>
 	<script src="https://code.highcharts.com/modules/export-data.js"></script>
-	<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+	<script src="https://code.highcharts.com/modules/accessibility.js"></script>	
+	<script src="https://code.highcharts.com/highcharts-3d.js"></script>
+
 	<!--<script src="https://code.highcharts.com/themes/dark-unica.js"></script>
 <script src="https://code.highcharts.com/themes/high-contrast-light.js"></script> 
 
@@ -154,15 +156,15 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 				<div class="col-md-6 w3ls-high charts-grids">
 					<div class="hightchat-grid">
 
-						<h4 class="title">Daily sessions</h4>
-						<div id="example-1"></div>
+						<h4 class="title">Real time edited categories</h4>
+						<div id="container3"></div>
 
 					</div>
 				</div>
 				<div class="col-md-6 agileits-high charts-grids">
 					<div class="hightchat-grid1">
-						<h4 class="title">Browser market shares</h4>
-						<div id="example-2"></div>
+						<h4 class="title">Wiki Edit Languages Share</h4>
+						<div id="container4"></div>
 
 					</div>
 				</div>
@@ -180,46 +182,73 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 
 			$(document).ready(function () {
 				var socket = io();
-				var series;
-				var chartDataFull = new Map();
-				var chartDataSliding = new Map();
-
-				function processMap(mapData) {
-					var map = new Map([...mapData.entries()].sort((a, b) => b[1] - a[1]));
-					return map;
+				var series = [];
+				var data_full = [];
+				var data_sliding = [];
+				var event_top_categories = [];
+				var event_wikitype = [];
+		
+				function sortByValue(arr) {
+					arr.sort(function (a, b) {
+						var keyA = parseInt(a.value),
+							keyB = parseInt(b.value);
+						if (keyA < keyB) return -1;
+						if (keyA > keyB) return 1;
+						return 0;
+					});
 				}
-
-				function convertToArray(mapData, n) {
+		
+				function convertToArray(mapData) {
 					var arrs = new Array();
 					var i = 0;
 					for (let [key, value] of mapData.entries()) {
-						//console.log("value", value)
-						value = parseInt(value);
-						var arr = [key, value];
-						arrs.push(arr);
-						if (i++ == n) {
-							break;
-						}
 					}
 					return arrs;
 				}
-
-				// Highcharts.setOptions({
-				//     global: {
-				//         useUTC: false
-				//     },
-				//     lang: {
-				//         thousandsSep: ','
-				//     }
-				// });
-
+		
+				function convertObjectToArray(msgData) {
+					var arrs = new Array();
+					var i = 0;
+					for (var i = 0; i < msgData.length; i++) {
+						var value = parseInt(msgData[i].value);
+						var arr = [msgData[i].key, value];
+						arrs.push(arr);
+		
+					}
+					
+					return arrs;
+				}
+		
+				function preProcessMessage(dataArr, n) {
+					sortByValue(dataArr);
+					var dataMap = new Map();
+					for (var i = 0; i < dataArr.length; i++) {
+						dataMap.set(dataArr[i].key, dataArr[i])
+					}
+					var newArr = convertToArray(dataMap);
+					sortByValue(newArr);
+					return newArr.slice(-n)
+				}
+		
+				Highcharts.setOptions({
+					global: {
+						useUTC: false
+					},
+					lang: {
+						thousandsSep: ','
+					}
+				});
+		
 				var options = {
 					chart: {
-						type: 'column'
+					//renderTo: 'container1',
+					type: 'column'
 					},
-					//title is set in the div. 
 					title: {
-						text: '' 
+						text: ' '
+					},
+					subtitle: {
+						text: 'Source: <a href="http://en.wikipedia.org/wiki/List_of_cities_proper_by_population">Wikipedia</a>'
 					},
 					xAxis: {
 						type: 'category',
@@ -228,188 +257,91 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 					yAxis: {
 						min: 0,
 						title: {
-							text: 'View count'
+							text: 'View/Edit count'
 						}
 					},
+					
 					series: [{
-						name: 'Articles',
+						name: 'Articles/Categories',
 						data: [],
+						
 					}]
 				};
+		
 				//1st chart
 				var chartFull = new Highcharts.Chart('container1', options);
 				//chartFull.setTitle({text: "Most accessed pages on wikipedia - cumulative"});
-
+		
 				//2nd chart
 				var chartSliding = new Highcharts.Chart('container2', options);
 				//chartSliding.setTitle({text: "Most accessed pages on wikipedia - sliding window"});
-				var chart = chartFull;
-				var chartData;
-				socket.on('message', function (msgs) {
-					for (let msg of msgs) {
-						console.log(msg.topic, msg.key, msg.value)
+		
+				//3rd chart
+				var chartEventCategory = new Highcharts.Chart('container3', options);
+				//chartEventCategory.setTitle({text: "Edited categories"});
 
+				//4th chart
+				var chartWikiType = new Highcharts.Chart('container4', {
+					chart: {
+						type: 'pie',
+						options3d: {
+							enabled: true,
+							alpha: 45
+						}
+					},
+					title: {
+						text: ' '
+					},
+					tooltip: {
+						pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+					},
+					plotOptions: {
+						pie: {
+							innerSize: 100,
+							depth: 45
+						}
+					},
+					series: [{
+						name: 'Wiki Language',
+						data: [],
+					  
+					}]
+					
+				});
+			
+				socket.on('message', function(msgs){
+					var count = 10;
+					for(let msg of msgs) {
+						//console.log(msg.topic, msg.key, msg.value)
 						if (msg.topic == 'top_resource') {
-							chart = chartFull;
-							chartData = chartDataFull;
+
+							data_full.push(msg);
+							data_full = preProcessMessage(data_full, count).slice(0);
+							chartFull.series[0].setData(convertObjectToArray(data_full));
 						} else if (msg.topic == 'top_resource_sliding') {
-							chart = chartSliding;
-							chartData = chartDataSliding
+							data_sliding.push(msg);
+							data_sliding = preProcessMessage(data_sliding, count).slice(0);
+							chartSliding.series[0].setData(convertObjectToArray(data_sliding));
+						} else if (msg.topic == 'event_top_categories') {
+							event_top_categories.push(msg);
+							event_top_categories = preProcessMessage(event_top_categories, count).slice(0);
+							chartEventCategory.series[0].setData(convertObjectToArray(event_top_categories));
+						} else if (msg.topic == 'event_wikitype') {
+							event_wikitype.push(msg);
+							event_wikitype = preProcessMessage(event_wikitype, count).slice(0);
+							chartWikiType.series[0].setData(convertObjectToArray(event_wikitype));
+						} else {
+							console.error("unknown topic", msg.topic);
+							return;
 						}
 
-						chartData.set(msg.key, msg.value);
-						chartData = processMap(chartData);
-						var data = convertToArray(chartData, 10); //take top 10
-						chart.series[0].setData(data);
 					}
-					chart.redraw();
+					
 				});
-
+		
 			});
 		</script>
 
-		<!-- Dummy charts-->
-		<script type="text/javascript">
-		// dummy chart 1
-		Highcharts.chart('example-1', {
-
-		chart: {
-			scrollablePlotArea: {
-				minWidth: 700
-			}
-		},
-
-		data: {
-			csvURL: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@v7.0.0/samples/data/analytics.csv',
-			beforeParse: function (csv) {
-				return csv.replace(/\n\n/g, '\n');
-			}
-		},
-
-		title: {
-			text: ''
-		},
-
-		xAxis: {
-			tickInterval: 7 * 24 * 3600 * 1000, // one week
-			tickWidth: 0,
-			gridLineWidth: 1,
-			labels: {
-				align: 'left',
-				x: 3,
-				y: -3
-			}
-		},
-
-		yAxis: [{ // left y axis
-			title: {
-				text: null
-			},
-			labels: {
-				align: 'left',
-				x: 3,
-				y: 16,
-				format: '{value:.,0f}'
-			},
-			showFirstLabel: false
-		}, { // right y axis
-			linkedTo: 0,
-			gridLineWidth: 0,
-			opposite: true,
-			title: {
-				text: null
-			},
-			labels: {
-				align: 'right',
-				x: -3,
-				y: 16,
-				format: '{value:.,0f}'
-			},
-			showFirstLabel: false
-		}],
-
-		legend: {
-			align: 'left',
-			verticalAlign: 'top',
-			borderWidth: 0
-		},
-
-		tooltip: {
-			shared: true,
-			crosshairs: true
-		},
-
-		plotOptions: {
-			series: {
-				cursor: 'pointer',
-				className: 'popup-on-click',
-				marker: {
-					lineWidth: 1
-				}
-			}
-		},
-
-		series: [{
-			name: 'All sessions',
-			lineWidth: 4,
-			marker: {
-				radius: 4
-			}
-		}, {
-			name: 'New users'
-		}]
-		});
-
-		//dummy chart 2
-		Highcharts.chart('example-2', {
-    chart: {
-        type: 'pie',
-        options3d: {
-            enabled: true,
-            alpha: 45,
-            beta: 0
-        }
-    },
-    title: {
-        text: 'Browser market shares'
-    },
-    accessibility: {
-        point: {
-            valueSuffix: '%'
-        }
-    },
-    tooltip: {
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-    },
-    plotOptions: {
-        pie: {
-            allowPointSelect: true,
-            cursor: 'pointer',
-            depth: 35,
-            dataLabels: {
-                enabled: true,
-                format: '{point.name}'
-            }
-        }
-    },
-    series: [{
-        type: 'pie',
-        name: 'Browser share',
-        data: [
-            ['Firefox', 45.0],
-            ['IE', 26.8],
-            {
-                name: 'Chrome',
-                y: 12.8,
-                sliced: true,
-                selected: true
-            },
-            ['Safari', 8.5],
-            ['Opera', 6.2],
-            ['Others', 0.7]
-        ]
-    }]
-});
 		
 		</script>
 		<!---Charts end---->

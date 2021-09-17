@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<head>
+  <title>Wiki EventStreams</title>
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <script src="js/jquery-1.11.1.min.js"></script>
+</head>
+
+<body translate="no">
+  <div class="container">
+    <div id="rate-div">
+      <span>"recentchange" stream from Wikipedia</span>
+    </div>
+    <pre id="streamFeed"></pre>
+  </div>
+
+
+  <script>
+    var eventsource;
+
+    var feedNode = document.getElementById('streamFeed');
+    var updateBuffer = makeDisplayBuffer(20);
+
+    window.onload = consumeEvents;
+
+    function consumeEvents() {
+      if (eventsource) {
+        eventsource.close();
+      }
+      delete eventsource;
+
+      var streamsUrl = 'https://stream.wikimedia.org/v2/stream/recentchange';
+      eventsource = new EventSource(streamsUrl);
+
+      eventsource.onmessage = onMessage;
+    }
+
+    function onMessage(msg) {
+      printEvent({ type: 'message', data: msg.data });
+    };
+
+    function printEvent(event) {
+      var node;
+      if (event.type === 'message') {
+        var eventData = event.data;
+        var node = document.createTextNode(eventData + '\n');
+        feedNode.prepend(node);
+        updateBuffer(node);
+      }
+    }
+
+    function makeDisplayBuffer(size) {
+      var buffer = [];
+      return function (element) {
+        buffer.push(element);
+        if (buffer.length > size) {
+          var popped = buffer.shift();
+          popped.parentNode.removeChild(popped);
+        }
+      };
+    }
+
+  </script>
+
+</body>
+
+</html>

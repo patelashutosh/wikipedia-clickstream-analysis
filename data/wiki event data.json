@@ -1,0 +1,146 @@
+{
+    "$schema": "/mediawiki/recentchange/1.0.0",
+    "meta": {
+        "uri": "https://commons.wikimedia.org/wiki/File:Giovanca_11.jpg",
+        "request_id": "62b04795-82a2-4db8-b2b9-d12ede2f4625",
+        "id": "ab9d7ae0-35e2-4e82-b81b-68c0caece4e0",
+        "dt": "2021-09-17T04:39:48Z",
+        "domain": "commons.wikimedia.org",
+        "stream": "mediawiki.recentchange",
+        "topic": "eqiad.mediawiki.recentchange",
+        "partition": 0,
+        "offset": 3302999509
+    },
+    "id": 1770655674,
+    "type": "edit",
+    "namespace": 6,
+    "title": "File:Giovanca 11.jpg",
+    "comment": "/* wbcreateclaim-create:1| */ [[d:Special:EntityPage/P180]]: [[d:Special:EntityPage/Q1813005]], Setting a depicts statement using Depictor",
+    "timestamp": 1631853588,
+    "user": "Todrobbins",
+    "bot": false,
+    "minor": false,
+    "patrolled": false,
+    "length": {
+        "old": 2584,
+        "new": 3016
+    },
+    "revision": {
+        "old": 476296897,
+        "new": 591735591
+    },
+    "server_url": "https://commons.wikimedia.org",
+    "server_name": "commons.wikimedia.org",
+    "server_script_path": "/w",
+    "wiki": "commonswiki",
+    "parsedcomment": "‎<span dir=\"auto\"><span class=\"autocomment\">Created claim: </span></span> <a href=\"https://www.wikidata.org/wiki/Special:EntityPage/P180\" class=\"extiw\" title=\"d:Special:EntityPage/P180\">d:Special:EntityPage/P180</a>: <a href=\"https://www.wikidata.org/wiki/Special:EntityPage/Q1813005\" class=\"extiw\" title=\"d:Special:EntityPage/Q1813005\">d:Special:EntityPage/Q1813005</a>, Setting a depicts statement using Depictor"
+}
+{
+    "$schema": "/mediawiki/recentchange/1.0.0",
+    "meta": {
+        "uri": "https://en.wikipedia.org/wiki/Desert_Crossing",
+        "request_id": "c00081bc-54e0-4942-9718-03ec63fd1889",
+        "id": "edf82150-6a0a-41c4-af60-e5062fc42a08",
+        "dt": "2021-09-17T04:39:45Z",
+        "domain": "en.wikipedia.org",
+        "stream": "mediawiki.recentchange",
+        "topic": "eqiad.mediawiki.recentchange",
+        "partition": 0,
+        "offset": 3302999508
+    },
+    "id": 1423548780,
+    "type": "edit",
+    "namespace": 0,
+    "title": "Desert Crossing",
+    "comment": "Review from book",
+    "timestamp": 1631853585,
+    "user": "109.79.164.242",
+    "bot": false,
+    "minor": false,
+    "length": {
+        "old": 11965,
+        "new": 12515
+    },
+    "revision": {
+        "old": 1044796746,
+        "new": 1044800275
+    },
+    "server_url": "https://en.wikipedia.org",
+    "server_name": "en.wikipedia.org",
+    "server_script_path": "/w",
+    "wiki": "enwiki",
+    "parsedcomment": "Review from book"
+}
+{
+    "$schema": "/mediawiki/recentchange/1.0.0",
+    "meta": {
+        "uri": "https://www.wikidata.org/wiki/Q17834540",
+        "request_id": "1565a460-4f5e-4603-a126-2b5c9626cdb3",
+        "id": "e77e928c-a261-4447-84ea-e6fe46b51108",
+        "dt": "2021-09-17T04:39:48Z",
+        "domain": "www.wikidata.org",
+        "stream": "mediawiki.recentchange",
+        "topic": "eqiad.mediawiki.recentchange",
+        "partition": 0,
+        "offset": 3302999507
+    },
+    "id": 1545993613,
+    "type": "edit",
+    "namespace": 0,
+    "title": "Q17834540",
+    "comment": "/* wbsetqualifier-update:1| */ [[Property:P3831]]: [[Q15060255]]",
+    "timestamp": 1631853588,
+    "user": "Tagishsimon",
+    "bot": false,
+    "minor": false,
+    "patrolled": true,
+    "length": {
+        "old": 11928,
+        "new": 11932
+    },
+    "revision": {
+        "old": 1416919144,
+        "new": 1498812204
+    },
+    "server_url": "https://www.wikidata.org",
+    "server_name": "www.wikidata.org",
+    "server_script_path": "/w",
+    "wiki": "wikidatawiki",
+    "parsedcomment": "‎<span dir=\"auto\"><span class=\"autocomment\">Changed qualifier: </span></span> <a href=\"/wiki/Property:P3831\" title=\"Property:P3831\">Property:P3831</a>: <a href=\"/wiki/Q15060255\" title=\"Q15060255\">Q15060255</a>"
+}
+{
+    "$schema": "/mediawiki/recentchange/1.0.0",
+    "meta": {
+        "uri": "https://en.wikipedia.org/wiki/User:HugoAcosta9/sandbox",
+        "request_id": "d83da487-4d37-4369-acc1-c9707b5a5ab1",
+        "id": "8b6facc8-ff7d-41a1-ae7e-2de79c202211",
+        "dt": "2021-09-17T04:39:47Z",
+        "domain": "en.wikipedia.org",
+        "stream": "mediawiki.recentchange",
+        "topic": "eqiad.mediawiki.recentchange",
+        "partition": 0,
+        "offset": 3302999506
+    },
+    "id": 1423548778,
+    "type": "edit",
+    "namespace": 2,
+    "title": "User:HugoAcosta9/sandbox",
+    "comment": "/* UEFA Champions League */",
+    "timestamp": 1631853587,
+    "user": "HugoAcosta9",
+    "bot": false,
+    "minor": false,
+    "length": {
+        "old": 42856,
+        "new": 42802
+    },
+    "revision": {
+        "old": 1044619123,
+        "new": 1044800279
+    },
+    "server_url": "https://en.wikipedia.org",
+    "server_name": "en.wikipedia.org",
+    "server_script_path": "/w",
+    "wiki": "enwiki",
+    "parsedcomment": "<span dir=\"auto\"><span class=\"autocomment\"><a href=\"/wiki/User:HugoAcosta9/sandbox#UEFA_Champions_League\" title=\"User:HugoAcosta9/sandbox\">→‎UEFA Champions League</a></span></span>"
+}
